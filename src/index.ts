@@ -1,15 +1,29 @@
 import express from "express";
 import reviewRoute from "./routes/review.route";
 import connectToDB from "./db";
+import errorHandler from "./middleware/errorHandler";
+import { OK } from "./constants/httpStatusCodes";
 
 const app = express()
+const port = process.env.PORT || 3000
+
 app.use(express.json())
 
 app.use('/review', reviewRoute)
-const port = process.env.PORT || 3000
 
-await connectToDB()
+app.get('/', async (req, res, next) => {
+    try {
+        res.status(OK).json({
+            status: "healthy"
+        })  
+    } catch (error) {
+        next(error)
+    }
+})
 
-app.listen(port, () => {
+app.use(errorHandler)
+
+app.listen(port, async () => {
     console.log(`server listen in port ${port}`)
+    await connectToDB()
 })
